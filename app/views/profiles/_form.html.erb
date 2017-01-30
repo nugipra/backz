@@ -1,4 +1,4 @@
-<%= form_for(profile, class: "form-group") do |f| %>
+<%= form_for(profile, class: "form-horizontal") do |f| %>
   <% if profile.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(profile.errors.count, "error") %> prohibited this profile from being saved:</h2>
@@ -11,17 +11,17 @@
     </div>
   <% end %>
 
-  <div class="field">
+  <div class="form-group">
     <%= f.label :name %>
     <%= f.text_field :name, autofocus: true, class: "form-control" %>
   </div>
 
-  <div class="field">
+  <div class="form-group">
     <%= f.label :backup_paths %>
     <%= f.text_field :backup_paths, class: "form-control"  %>
   </div>
 
-  <div class="field">
+  <div class="form-group">
     <%= f.label :exclusion_paths %>
     <%= f.text_field :exclusion_paths, class: "form-control"  %>
   </div>
