@@ -1,0 +1,19 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Name:</strong>
+  <%= @profile.name %>
+</p>
+
+<p>
+  <strong>Backup paths:</strong>
+  <%= @profile.backup_paths %>
+</p>
+
+<p>
+  <strong>Exclusion paths:</strong>
+  <%= @profile.exclusion_paths %>
+</p>
+
+<%= link_to 'Edit', edit_profile_path(@profile) %> |
+<%= link_to 'Back', profiles_path %>

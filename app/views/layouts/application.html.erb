@@ -23,6 +23,16 @@
               <%= link_to "Simple Backup", "/", class: "navbar-brand" %>
             </div>
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+              <% if user_signed_in? %>
+                <ul class="nav navbar-nav">
+                  <li class="<%= params[:controller] == "home" && params[:action] == "index" ? "active" : "" %>">
+                    <%= link_to "Home", "/" %>
+                  </li>
+                  <li class="<%= params[:controller] == "profiles" ? "active" : "" %>">
+                    <%= link_to "Profiles", profiles_path %>
+                  </li>
+                </ul>
+              <% end %>
               <ul class="nav navbar-nav navbar-right">
                 <% unless user_signed_in? %>
                   <li><%= link_to "Sign In", new_user_session_path  %></li>
