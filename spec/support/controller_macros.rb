@@ -6,4 +6,10 @@ module ControllerMacros
       sign_in @user
     end
   end
+
+  def clear_backup_files
+    after(:each) do
+      FileUtils.remove_dir BackupFile.base_dir
+    end
+  end
 end

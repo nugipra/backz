@@ -11,5 +11,10 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :profiles
+  resources :profiles do
+    member do
+      post :run_backup
+      get 'browse/:version', to: 'profiles#browse_backup_files', as: :browse_backup_files
+    end
+  end
 end

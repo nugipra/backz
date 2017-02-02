@@ -26,7 +26,7 @@
               <% if user_signed_in? %>
                 <ul class="nav navbar-nav">
                   <li class="<%= params[:controller] == "home" && params[:action] == "index" ? "active" : "" %>">
-                    <%= link_to "Home", "/" %>
+                    <%= link_to "Dashboard", "/" %>
                   </li>
                   <li class="<%= params[:controller] == "profiles" ? "active" : "" %>">
                     <%= link_to "Profiles", profiles_path %>

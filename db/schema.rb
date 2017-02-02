@@ -10,10 +10,30 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170129091429) do
+ActiveRecord::Schema.define(version: 20170130130149) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "backup_files", force: :cascade do |t|
+    t.integer  "profile_id"
+    t.integer  "version"
+    t.string   "where"
+    t.string   "filename"
+    t.boolean  "is_directory"
+    t.integer  "access_number"
+    t.integer  "mode"
+    t.integer  "gid"
+    t.integer  "uid"
+    t.integer  "size"
+    t.string   "status"
+    t.datetime "file_created_at"
+    t.datetime "file_modified_at"
+    t.integer  "parent_id"
+    t.datetime "created_at",       null: false
+    t.datetime "updated_at",       null: false
+    t.index ["profile_id"], name: "index_backup_files_on_profile_id", using: :btree
+  end
 
   create_table "profiles", force: :cascade do |t|
     t.integer  "user_id"
@@ -42,5 +62,6 @@ ActiveRecord::Schema.define(version: 20170129091429) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
   end
 
+  add_foreign_key "backup_files", "profiles"
   add_foreign_key "profiles", "users"
 end

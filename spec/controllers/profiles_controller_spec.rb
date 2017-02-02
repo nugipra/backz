@@ -37,21 +37,21 @@ RSpec.describe ProfilesController, type: :controller do
   # ProfilesController. Be sure to keep this updated too.
   let(:valid_session) { {} }
 
-  before(:each) do
-    @profile = FactoryGirl.create(:profile, user: @user)
-  end
+  let(:profile) {
+    FactoryGirl.create(:profile, user: @user)
+  }
 
   describe "GET #index" do
     it "assigns all profiles as @profiles" do
       get :index, params: {}
-      expect(assigns(:profiles)).to eq([@profile])
+      expect(assigns(:profiles)).to eq([profile])
     end
   end
 
   describe "GET #show" do
     it "assigns the requested profile as @profile" do
-      get :show, params: {id: @profile.to_param}
-      expect(assigns(:profile)).to eq(@profile)
+      get :show, params: {id: profile.to_param}
+      expect(assigns(:profile)).to eq(profile)
     end
   end
 
@@ -64,8 +64,8 @@ RSpec.describe ProfilesController, type: :controller do
 
   describe "GET #edit" do
     it "assigns the requested profile as @profile" do
-      get :edit, params: {id: @profile.to_param}
-      expect(assigns(:profile)).to eq(@profile)
+      get :edit, params: {id: profile.to_param}
+      expect(assigns(:profile)).to eq(profile)
     end
   end
 
@@ -104,35 +104,32 @@ RSpec.describe ProfilesController, type: :controller do
 
   describe "PUT #update" do
     context "with valid params" do
-      let(:new_attributes) {
-        attributes_for(:profile).merge(name: "new profile name")
-      }
-
       it "updates the requested profile" do
-        put :update, params: {id: @profile.to_param, profile: new_attributes}
-        @profile.reload
-        expect(@profile.name).to eq("new profile name")
+        new_attributes = valid_attributes.merge(name: "new profile name")
+        put :update, params: {id: profile.to_param, profile: new_attributes}
+        profile.reload
+        expect(profile.name).to eq("new profile name")
       end
 
       it "assigns the requested profile as @profile" do
-        put :update, params: {id: @profile.to_param, profile: valid_attributes}
-        expect(assigns(:profile)).to eq(@profile)
+        put :update, params: {id: profile.to_param, profile: valid_attributes}
+        expect(assigns(:profile)).to eq(profile)
       end
 
       it "redirects to the profile" do
-        put :update, params: {id: @profile.to_param, profile: valid_attributes}
-        expect(response).to redirect_to(@profile)
+        put :update, params: {id: profile.to_param, profile: valid_attributes}
+        expect(response).to redirect_to(profile)
       end
     end
 
     context "with invalid params" do
       it "assigns the profile as @profile" do
-        put :update, params: {id: @profile.to_param, profile: invalid_attributes}
-        expect(assigns(:profile)).to eq(@profile)
+        put :update, params: {id: profile.to_param, profile: invalid_attributes}
+        expect(assigns(:profile)).to eq(profile)
       end
 
       it "re-renders the 'edit' template" do
-        put :update, params: {id: @profile.to_param, profile: invalid_attributes}
+        put :update, params: {id: profile.to_param, profile: invalid_attributes}
         expect(response).to render_template("edit")
       end
     end
@@ -140,14 +137,143 @@ RSpec.describe ProfilesController, type: :controller do
 
   describe "DELETE #destroy" do
     it "destroys the requested profile" do
+      destroyed_profile = profile
       expect {
-        delete :destroy, params: {id: @profile.to_param}
+        delete :destroy, params: {id: destroyed_profile.to_param}
       }.to change(Profile, :count).by(-1)
     end
 
     it "redirects to the profiles list" do
-      delete :destroy, params: {id: @profile.to_param}
+      delete :destroy, params: {id: profile.to_param}
       expect(response).to redirect_to(profiles_url)
+    end
+  end
+
+  describe "GET #browse_backup_files" do
+    clear_backup_files
+
+    before(:each) do
+      @profile = FactoryGirl.create(:profile, user: @user)
+      @file1 = FactoryGirl.create(:backup_file, profile: @profile)
+      @folder1 = FactoryGirl.create(:backup_folder, profile: @profile)
+
+      # there are 2 files and 1 folder on @folder1
+      @file2 = FactoryGirl.create(:backup_file, profile: @profile, folder: @folder1)
+      @file3 = FactoryGirl.create(:backup_file, profile: @profile, folder: @folder1)
+      @folder2 = FactoryGirl.create(:backup_folder, profile: @profile, folder: @folder1)
+
+      # there is 1 files on @folder2
+      @file4 = FactoryGirl.create(:backup_file, profile: @profile, folder: @folder2)
+    end
+
+    it "browses backup folder" do
+      get :browse_backup_files, params: {id: @profile.to_param, version: 1}
+      expect(assigns(:parent)).to eq(nil)
+      expect(assigns(:backup_files).size).to eq(2)
+
+      get :browse_backup_files, params: {id: @profile.to_param, version: 1, parent_id: @folder1.id}
+      expect(assigns(:parent)).to eq(@folder1)
+      expect(assigns(:backup_files).size).to eq(3)
+
+      get :browse_backup_files, params: {id: @profile.to_param, version: 1, parent_id: @folder2.id}
+      expect(assigns(:parent)).to eq(@folder2)
+      expect(assigns(:backup_files).size).to eq(1)
+    end
+
+    it "browses backup file" do
+      get :browse_backup_files, params: {id: @profile.to_param, version: 1, file_id: @file1.id}
+      expect(assigns(:backup_file)).to eq(@file1)
+      allow(controller).to receive(:render)
+
+      get :browse_backup_files, params: {id: @profile.to_param, version: 1, file_id: @file2.id}
+      expect(assigns(:backup_file)).to eq(@file2)
+      allow(controller).to receive(:render)
+    end
+  end
+
+  describe "POST #run_backup" do
+    clear_backup_files
+
+    before(:each) do
+      @test_dir = Rails.root.join("spec", "testdir")
+      FileUtils.mkdir_p @test_dir
+
+      FileUtils.touch @test_dir.join("file1.txt")
+      FileUtils.touch @test_dir.join("file2.txt")
+      FileUtils.touch @test_dir.join(".DS_Store")
+
+      FileUtils.mkdir_p @test_dir.join("documents")
+      FileUtils.touch @test_dir.join("documents", "file3.txt")
+      FileUtils.touch @test_dir.join("documents", "file4.doc")
+
+      FileUtils.mkdir_p @test_dir.join("documents","ebook")
+      FileUtils.touch @test_dir.join("documents","ebook", "file5.pdf")
+      FileUtils.touch @test_dir.join("documents","ebook", "file6.pdf")
+
+      FileUtils.mkdir_p @test_dir.join("images")
+      FileUtils.touch @test_dir.join("images","file7.jpg")
+    end
+
+    after(:each) do
+      FileUtils.remove_dir @test_dir
+    end
+
+    let(:backup_paths) {
+      [@test_dir.join("documents").to_s, @test_dir.join("images").to_s].join(",")
+    }
+
+    context "without exclusion" do
+      it "saves backup file records to database" do
+        @profile = FactoryGirl.create(:profile, user: @user, backup_paths: backup_paths)
+
+        expect {
+          post :run_backup, params: {id: @profile.to_param}
+        }.to change(BackupFile, :count).by(8)
+      end
+
+      it "store backup files" do
+        @profile = FactoryGirl.create(:profile, user: @user, backup_paths: backup_paths)
+
+        post :run_backup, params: {id: @profile.to_param}
+        storage_dir = BackupFile.base_dir.join("%06d" % @profile.id, "%06d" % 1)
+        expect(File.exists?(storage_dir.join("documents"))).to be true
+        expect(File.exists?(storage_dir.join("documents", "file3.txt"))).to be true
+        expect(File.exists?(storage_dir.join("documents", "file4.doc"))).to be true
+        expect(File.exists?(storage_dir.join("documents", "ebook"))).to be true
+        expect(File.exists?(storage_dir.join("documents", "ebook", "file5.pdf"))).to be true
+        expect(File.exists?(storage_dir.join("documents", "ebook", "file6.pdf"))).to be true
+        expect(File.exists?(storage_dir.join("images"))).to be true
+        expect(File.exists?(storage_dir.join("images", "file7.jpg"))).to be true
+      end
+    end
+
+    context "with exclusion" do
+      let(:exclusion_paths) {
+        ["*.pdf", @test_dir.join("documents", "file3.txt").to_s].join(",")
+      }
+
+      it "saves backup file records to database" do
+        @profile = FactoryGirl.create(:profile, user: @user, backup_paths: backup_paths, exclusion_paths: exclusion_paths)
+
+        expect {
+          post :run_backup, params: {id: @profile.to_param}
+        }.to change(BackupFile, :count).by(5)
+      end
+
+      it "store backup files" do
+        @profile = FactoryGirl.create(:profile, user: @user, backup_paths: backup_paths, exclusion_paths: exclusion_paths)
+
+        post :run_backup, params: {id: @profile.to_param}
+        storage_dir = BackupFile.base_dir.join("%06d" % @profile.id, "%06d" % 1)
+        expect(File.exists?(storage_dir.join("documents"))).to be true
+        expect(File.exists?(storage_dir.join("documents", "file3.txt"))).to be false
+        expect(File.exists?(storage_dir.join("documents", "file4.doc"))).to be true
+        expect(File.exists?(storage_dir.join("documents", "ebook"))).to be true
+        expect(File.exists?(storage_dir.join("documents", "ebook", "file5.pdf"))).to be false
+        expect(File.exists?(storage_dir.join("documents", "ebook", "file6.pdf"))).to be false
+        expect(File.exists?(storage_dir.join("images"))).to be true
+        expect(File.exists?(storage_dir.join("images", "file7.jpg"))).to be true
+      end
     end
   end
 

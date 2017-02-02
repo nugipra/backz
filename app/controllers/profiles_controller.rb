@@ -1,6 +1,8 @@
 class ProfilesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_profile, only: [:show, :edit, :update, :destroy]
+  before_action :set_profile, only: [
+    :show, :edit, :update, :destroy, :run_backup, :browse_backup_files
+  ]
 
   # GET /profiles
   # GET /profiles.json
@@ -61,6 +63,27 @@ class ProfilesController < ApplicationController
       format.html { redirect_to profiles_url, notice: 'Profile was successfully destroyed.' }
       format.json { head :no_content }
     end
+  end
+
+  def run_backup
+    @profile.run_backup
+    redirect_to profiles_url, notice: 'Backups completed sucessfully'
+  end
+
+  def browse_backup_files
+    if params[:file_id].present?
+      @backup_file = @profile.backup_files.find(params[:file_id])
+      send_file @backup_file.get_storage_path_by_version(params[:version])
+      return
+    end
+
+    @parent = @profile.backup_files.find(params[:parent_id]) if params[:parent_id].present?
+    @backup_files = @profile.backup_files.where(version: params[:version], parent_id: @parent.try(:id)).order("is_directory desc, filename")
+    @backup_version = @profile.backup_files.select("version, max(created_at) as backup_time").group("version").order("version desc")
+    @current_backup_version = @backup_version.detect{|b| b.version == params[:version].to_i}
+
+    @total_added_files = @profile.count_files_by_status_and_version("added", params[:version])
+    @total_modified_files = @profile.count_files_by_status_and_version("modified", params[:version])
   end
 
   private

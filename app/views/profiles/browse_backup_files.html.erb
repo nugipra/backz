@@ -1,0 +1,63 @@
+<p id="notice"><%= notice %></p>
+
+<div class="page-header">
+  <h1>
+    Browse backup files <br/>
+    <small>
+      Profile : <%= @profile.name %> 
+    </small>
+  </h1>
+
+  <p>
+    Backup version : <%= params[:version] %> 
+    (completed on <%= @current_backup_version.backup_time.in_time_zone("Jakarta").strftime("%b %d, %Y %H:%M:%S %Z") %>)
+  </p>
+  <p>
+    <%= pluralize @total_added_files, "file" %> added. 
+    <%= pluralize @total_modified_files, "file" %> modified.
+  </p>
+</div>
+
+<%= backup_files_breadcrumb %>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th class="col-sm-4">Filename</th>
+      <th class="col-sm-1">Size</th>
+      <th class="col-sm-1">Owner</th>
+      <th class="col-sm-1">Group</th>
+      <th class="col-sm-1">Permission</th>
+  </thead>
+
+  <tbody class="table-striped">
+    <tr>
+      <td colspan="5">
+        <span style="margin-left: 20px">
+          <% if @parent %>
+            <%= link_to "..", "/profiles/#{@profile.id}/browse/#{params[:version]}?parent_id=#{@parent.parent_id}", title: "Go to parent directory" %>
+          <% else %>
+            <%= link_to "..", profiles_path, title: "Go back" %>
+          <% end %>
+        </span>
+      </td>
+    </tr>
+    <% @backup_files.each do |backup_file| %>
+      <tr>
+        <td>
+          <% if backup_file.is_directory? %>
+            <%= image_tag("folder.png", size: "20x20") %> <%= link_to backup_file.filename, "/profiles/#{@profile.id}/browse/#{params[:version]}?parent_id=#{backup_file.id}" %>
+          <% else %>
+            <span style="margin-left: 20px">
+              <%= link_to backup_file.filename, "/profiles/#{@profile.id}/browse/#{params[:version]}?file_id=#{backup_file.id}" %>
+            </span>
+          <% end %>
+        </td>
+        <td><%= number_to_human_size(backup_file.size) unless backup_file.is_directory? %></td>
+        <td><%= Etc.getpwuid(backup_file.uid).try(:name) %></td>
+        <td><%= Etc.getgrgid(backup_file.gid).try(:name) %></td>
+        <td><%= backup_file.access_number %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
