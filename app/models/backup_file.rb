@@ -18,7 +18,7 @@ class BackupFile < ApplicationRecord
     stat = File.stat(path)
     permission = stat.world_readable?
     filename = File.basename(path)
-    access_number = sprintf("%o", permission)
+    access_number = permission.present? ? sprintf("%o", permission) : nil
 
     backup_file = BackupFile.new(
       profile_id: profile.id,
@@ -37,7 +37,7 @@ class BackupFile < ApplicationRecord
     # backup actual files
     if File.directory?(path)
       backup_file.save
-      dirname = backup_file.get_storage_path_by_version(version)
+      dirname = backup_file.storage_path
       FileUtils.mkdir_p dirname, mode: stat.mode
 
       Dir.entries(path).each do |child|
@@ -49,21 +49,22 @@ class BackupFile < ApplicationRecord
     else
       # avoid data deduplication if file is not changed
       # create symlink instead of storing identical file
-      versioned_file_storage_path = backup_file.get_storage_path_by_version(version - 1)
-      file_storage_path = backup_file.get_storage_path_by_version(version)
+      versioned_file_storage_path = backup_file.storage_path(version: version - 1)
+      file_storage_path = backup_file.storage_path
       if File.exists?(versioned_file_storage_path) && FileUtils.compare_file(versioned_file_storage_path, path)
         backup_file.status = "not changed"
         File.symlink File.realpath(versioned_file_storage_path), file_storage_path
       else
         backup_file.status = File.exists?(versioned_file_storage_path) ? "modified" : "added"
-        FileUtils.cp path, File.dirname(file_storage_path)
+        FileUtils.cp path, File.dirname(file_storage_path), preserve: true
       end
 
       backup_file.save
     end
   end
 
-  def get_storage_path_by_version(version)
+  def storage_path(options = {})
+    version = options[:version].present? ?  options[:version] : self.version
     return "" if version.blank? || version.to_i.zero?
 
     # backup records will be grouped under profile and version folder

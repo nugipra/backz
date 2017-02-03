@@ -46,9 +46,9 @@ FactoryGirl.define do
 
     after(:create) do |backup|
       if backup.is_directory
-        FileUtils.mkdir_p backup.get_storage_path_by_version(backup.version)
+        FileUtils.mkdir_p backup.storage_path
       else
-        FileUtils.touch backup.get_storage_path_by_version(backup.version)
+        FileUtils.touch backup.storage_path
       end
     end
   end
