@@ -47,6 +47,8 @@ class BackupFile < ApplicationRecord
         BackupFile.store(profile, child_path, version, backup_file)
       end
     else
+      backup_file.last_modified = File.mtime(path)
+
       # avoid data deduplication if file is not changed
       # create symlink instead of storing identical file
       versioned_file_storage_path = backup_file.storage_path(version: version - 1)
@@ -56,7 +58,6 @@ class BackupFile < ApplicationRecord
         File.symlink File.realpath(versioned_file_storage_path), file_storage_path
       else
         backup_file.status = File.exists?(versioned_file_storage_path) ? "modified" : "added"
-        backup_file.last_modified = File.mtime(path)
         FileUtils.cp path, File.dirname(file_storage_path), preserve: true
       end
 
