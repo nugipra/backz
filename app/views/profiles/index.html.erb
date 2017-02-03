@@ -2,47 +2,51 @@
 
 <h2>Profiles</h2>
 
-<table class="table">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Backup files</th>
-      <th colspan="3"></th>
-    </tr>
-  </thead>
-
-  <tbody class="table-striped">
-    <% @profiles.each do |profile| %>
+<% if @profiles.size.zero? %>
+  <p>No profiles created yet</p>
+<% else %>
+  <table class="table">
+    <thead>
       <tr>
-        <td><%= link_to profile.name, profile %></td>
-        <td>
-          <ul>
-            <% profile.backup_paths.split(","). each do |path| %>
-              <li><%= path %></li>
-            <% end %>
-          </ul>
+        <th>Name</th>
+        <th>Backup files</th>
+        <th colspan="3"></th>
+      </tr>
+    </thead>
 
-          <% if profile.exclusion_paths.present? %>
-            <h5>Exclude : </h5>
+    <tbody class="table-striped">
+      <% @profiles.each do |profile| %>
+        <tr>
+          <td><%= link_to profile.name, profile %></td>
+          <td>
             <ul>
-              <% profile.exclusion_paths.split(","). each do |path| %>
+              <% profile.backup_paths.split(","). each do |path| %>
                 <li><%= path %></li>
               <% end %>
             </ul>
-          <% end %>
-        </td>
-        <td><%= link_to 'Edit', edit_profile_path(profile) %></td>
-        <td><%= link_to 'Destroy', profile, method: :delete, data: { confirm: 'Are you sure?' } %></td>
-        <td><%= link_to image_tag("backup.png", size: "20x20"), run_backup_profile_path(profile), title: "Run backup now" , "data-method": :post, "data-confirm": "Are you sure to backup?" %></td>
-        <td>
-          <% unless profile.backup_files.count.zero? %>
-            <%= link_to image_tag("browse.png", size: "20x20"), "/profiles/#{profile.id}/browse/#{profile.latest_backup_version}", title: "Browse backup files" %>
-          <% end %>
-        </td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+
+            <% if profile.exclusion_paths.present? %>
+              <h5>Exclude : </h5>
+              <ul>
+                <% profile.exclusion_paths.split(","). each do |path| %>
+                  <li><%= path %></li>
+                <% end %>
+              </ul>
+            <% end %>
+          </td>
+          <td><%= link_to 'Edit', edit_profile_path(profile) %></td>
+          <td><%= link_to 'Destroy', profile, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+          <td><%= link_to image_tag("backup.png", size: "20x20"), run_backup_profile_path(profile), title: "Run backup now" , "data-method": :post, "data-confirm": "Are you sure to backup?" %></td>
+          <td>
+            <% unless profile.backup_files.count.zero? %>
+              <%= link_to image_tag("browse.png", size: "20x20"), "/profiles/#{profile.id}/browse/#{profile.latest_backup_version}", title: "Browse backup files" %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
 
 <br>
 

@@ -56,6 +56,7 @@ class BackupFile < ApplicationRecord
         File.symlink File.realpath(versioned_file_storage_path), file_storage_path
       else
         backup_file.status = File.exists?(versioned_file_storage_path) ? "modified" : "added"
+        backup_file.last_modified = File.mtime(path)
         FileUtils.cp path, File.dirname(file_storage_path), preserve: true
       end
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170130130149) do
+ActiveRecord::Schema.define(version: 20170203022532) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -27,11 +27,10 @@ ActiveRecord::Schema.define(version: 20170130130149) do
     t.integer  "uid"
     t.integer  "size"
     t.string   "status"
-    t.datetime "file_created_at"
-    t.datetime "file_modified_at"
+    t.datetime "last_modified"
     t.integer  "parent_id"
-    t.datetime "created_at",       null: false
-    t.datetime "updated_at",       null: false
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
     t.index ["profile_id"], name: "index_backup_files_on_profile_id", using: :btree
   end
 
