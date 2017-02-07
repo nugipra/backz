@@ -93,4 +93,25 @@ class BackupFile < ApplicationRecord
   def relative_path
     return Pathname.new(self.where.to_s).join(self.filename).to_s
   end
+
+  def revisions
+    return BackupFile.where(profile_id: self.profile_id, where: self.where, filename: self.filename).where.not(status: 'not changed').order("created_at desc")
+  end
+
+  def description_of_the_contents
+    begin
+      fm = FileMagic.new(FileMagic::MAGIC_MIME)
+      return fm.file(File.realpath(self.storage_path))
+    ensure
+      fm.close
+    end
+  end
+
+  def text?
+    return !(self.description_of_the_contents =~ /^text\//).nil?
+  end
+
+  def image?
+    return !(self.description_of_the_contents =~ /^image\//).nil?
+  end
 end

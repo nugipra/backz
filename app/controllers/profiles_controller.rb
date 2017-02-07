@@ -73,7 +73,7 @@ class ProfilesController < ApplicationController
   def browse_backup_files
     if params[:file_id].present?
       @backup_file = @profile.backup_files.find(params[:file_id])
-      send_file @backup_file.storage_path
+      send_file @backup_file.storage_path, disposition: params[:disposition]
       return
     end
 

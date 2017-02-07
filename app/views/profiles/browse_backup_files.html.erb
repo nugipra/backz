@@ -23,12 +23,13 @@
 <table class="table">
   <thead>
     <tr>
-      <th class="col-sm-6">Filename</th>
+      <th class="col-sm-5">Filename</th>
       <th class="col-sm-1">Size</th>
       <th class="col-sm-1">Owner</th>
       <th class="col-sm-1">Group</th>
       <th class="col-sm-1">Permission</th>
-      <th class="col-sm-2">Last modified</th>
+      <th class="col-sm-1">Last modified</th>
+      <th class="col-sm-2"></th>
   </thead>
 
   <tbody class="table-striped">
@@ -61,6 +62,11 @@
         <td>
           <% unless backup_file.is_directory? %>
             <%= time_ago_in_words(backup_file.last_modified) %> ago
+          <% end %>
+        </td>
+        <td>
+          <% unless backup_file.is_directory? %>
+            <%= link_to "Revision history", revision_history_path(backup_file) %>
           <% end %>
         </td>
       </tr>

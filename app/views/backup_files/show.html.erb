@@ -1,0 +1,41 @@
+<div class="row">
+  <div class="col-sm-9">
+    <h1>
+      Revision history
+    </h1>
+
+    <%= revision_history_breadcrumb %>
+
+    <% if @backup_file.text? %>
+      <pre style="line-height:10px">
+<% IO.foreach(@backup_file.storage_path).each_with_index do |output| %>
+<%= output %> 
+<% end %>
+      </pre>
+    <% elsif @backup_file.image? %>
+      <div class="well">
+        <%= image_tag "/profiles/#{@backup_file.profile_id}/browse/#{@backup_file.version}?file_id=#{@backup_file.id}&disposition=inline" %>
+      </div>
+    <% else %>
+      <div class="well">
+        <p>No preview for this file</p>
+      </div>
+    <% end %> 
+  </div>
+  <div class="col-sm-3">
+    <h1>Revision time</h1>
+    <ul class="list-group">
+      <% @revisions.each do |file| %>
+        <% if file.last_modified == @backup_file.last_modified %>
+          <li class="list-group-item active">
+            <%= file.last_modified.in_time_zone("Jakarta").strftime("%b %d, %Y %H:%M:%S %Z") %>
+          </li>
+        <% else %>
+          <li class="list-group-item">
+            <%= link_to file.last_modified.in_time_zone("Jakarta").strftime("%b %d, %Y %H:%M:%S %Z"), revision_history_path(file) %>
+          </li>
+        <% end %>
+      <% end %>
+    </ul>
+  </div>
+</div>

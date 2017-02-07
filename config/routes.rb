@@ -17,4 +17,6 @@ Rails.application.routes.draw do
       get 'browse/:version', to: 'profiles#browse_backup_files', as: :browse_backup_files
     end
   end
+
+  get 'revision_history/:id', to: 'backup_files#show', as: :revision_history
 end
