@@ -61,6 +61,7 @@ class BackupFile < ApplicationRecord
         FileUtils.cp path, File.dirname(file_storage_path), preserve: true
       end
       backup_file.actual_size = File.lstat(file_storage_path).size
+      backup_file.set_filetype
 
       backup_file.save
     end
@@ -124,6 +125,20 @@ class BackupFile < ApplicationRecord
     return !(self.description_of_the_contents =~ /^video\//).nil?
   end
 
+  def audio?
+    return !(self.description_of_the_contents =~ /^audio\//).nil?
+  end
+
+  def set_filetype
+    type = "other"
+    type = "text" if text?
+    type = "image" if image?
+    type = "video" if video?
+    type = "audio" if audio?
+
+    self.filetype = type
+  end
+
   def owner_name
     return Etc.getpwuid(self.uid).try(:name)
   end
@@ -148,6 +163,7 @@ class BackupFile < ApplicationRecord
     self.last_modified = Time.now
     self.size = File.size(filepath)
     self.actual_size = File.lstat(filepath).size
+    self.set_filetype
     self.save
   end
 end

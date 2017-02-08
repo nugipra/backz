@@ -20,6 +20,11 @@
       <div class="well">
         <%= video_tag "/profiles/#{@backup_file.profile_id}/browse/#{@backup_file.version}?file_id=#{@backup_file.id}", width: 800  %>
       </div>
+    <% elsif @backup_file.audio? %>
+      <div class="well">
+        <%= audio_tag "/profiles/#{@backup_file.profile_id}/browse/#{@backup_file.version}?file_id=#{@backup_file.id}", autoplay: true %>
+        <p>Now playing audio file : <b><%= @backup_file.relative_path %></b></p>
+      </div>
     <% else %>
       <div class="well">
         <p>No preview for this file</p>

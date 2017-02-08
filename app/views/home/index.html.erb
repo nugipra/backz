@@ -5,3 +5,32 @@
 <p>
   You have used <b><%= number_to_human_size(@storage_usage) %></b> of backup storage
 </p>
+
+<% unless current_user.backup_files.count.zero? %>
+
+<div class="row">
+  <dic class="col-sm-6">
+    Total files that has been backed up
+    <canvas id="filetype_Chart"></canvas>
+  </div>
+  <dic class="col-sm-6">
+    Range of sizes of files that has been backed up
+    <canvas id="size_Chart"></canvas>
+  </div>
+</div>
+
+<script>
+var ctx = document.getElementById("filetype_Chart");
+var myPieChart = new Chart(ctx,{
+    type: 'pie',
+    data: <%= current_user.generate_total_backup_files_chart_data.to_json.html_safe %>
+});
+
+var ctx = document.getElementById("size_Chart");
+var myPieChart = new Chart(ctx, {
+    type: 'pie',
+    data: <%= current_user.generate_range_of_size_chart_data.to_json.html_safe %>
+});
+</script>
+
+<% end %>
