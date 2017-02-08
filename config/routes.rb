@@ -20,4 +20,5 @@ Rails.application.routes.draw do
   end
 
   get 'revision_history/:id', to: 'backup_files#show', as: :revision_history
+  post 'restore_file/:id', to: 'backup_files#restore', as: :restore_file
 end

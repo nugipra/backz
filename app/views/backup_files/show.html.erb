@@ -30,15 +30,15 @@
     <h1>Revision time</h1>
     <ul class="list-group">
       <% @revisions.each do |file| %>
-        <% if file.last_modified == @backup_file.last_modified %>
-          <li class="list-group-item active">
-            <%= file.last_modified.in_time_zone("Jakarta").strftime("%b %d, %Y %H:%M:%S %Z") %>
-          </li>
-        <% else %>
-          <li class="list-group-item">
-            <%= link_to file.last_modified.in_time_zone("Jakarta").strftime("%b %d, %Y %H:%M:%S %Z"), revision_history_path(file) %>
-          </li>
-        <% end %>
+        <li class="list-group-item <%="active" if file.version == @backup_file.version %>">
+          <% if file.version == @backup_file.version %>
+            <%= file.last_modified.in_time_zone("Jakarta").strftime("%b %d, %Y %H:%M %Z") %>
+          <% else %>
+            <%= link_to file.last_modified.in_time_zone("Jakarta").strftime("%b %d, %Y %H:%M %Z"), revision_history_path(file) %>
+          <% end %>
+          &nbsp;
+          <%= link_to "Restore", "/restore_file/#{@newest_revision.id}?version=#{file.version}", class: "btn btn-warning btn-sm", "data-method": :post, "data-confirm": "Are you sure to restore to this revision?" unless @revisions.first == file %>
+        </li>
       <% end %>
     </ul>
   </div>

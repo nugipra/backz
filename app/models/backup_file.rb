@@ -99,6 +99,10 @@ class BackupFile < ApplicationRecord
     return BackupFile.where(profile_id: self.profile_id, where: self.where, filename: self.filename).where.not(status: 'not changed').order("created_at desc")
   end
 
+  def newest_revision
+    return self.revisions.first
+  end
+
   def description_of_the_contents
     begin
       fm = FileMagic.new(FileMagic::MAGIC_MIME)
@@ -126,5 +130,24 @@ class BackupFile < ApplicationRecord
 
   def group_name
     return Etc.getgrgid(self.gid).try(:name)
+  end
+
+  def restore(version)
+    filepath = self.storage_path
+    restored_file_storage_path = self.storage_path(version: version)
+    last_version_file_storage_path = self.storage_path(version: self.version - 1)
+
+    FileUtils.rm filepath
+    if FileUtils.compare_file(restored_file_storage_path, last_version_file_storage_path)
+      self.status = "not changed"
+      File.symlink File.realpath(last_version_file_storage_path), filepath
+    else
+      self.status = "modified"
+      FileUtils.cp restored_file_storage_path, File.dirname(filepath), preserve: true
+    end
+    self.last_modified = Time.now
+    self.size = File.size(filepath)
+    self.actual_size = File.lstat(filepath).size
+    self.save
   end
 end
