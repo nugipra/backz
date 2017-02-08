@@ -19,11 +19,13 @@
   <div class="form-group">
     <%= f.label :backup_paths %>
     <%= f.text_field :backup_paths, class: "form-control"  %>
+    <p class="help-block">Use comma to insert multiple paths.</p>
   </div>
 
   <div class="form-group">
     <%= f.label :exclusion_paths %>
     <%= f.text_field :exclusion_paths, class: "form-control"  %>
+    <p class="help-block">Use comma to insert multiple paths.</p>
   </div>
 
   <%= f.submit f.object.new_record? ? "Create profile" : "Update profile", class: "btn btn-default" %>

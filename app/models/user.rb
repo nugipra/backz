@@ -6,4 +6,8 @@ class User < ApplicationRecord
 
   has_many :profiles, dependent: :destroy
   has_many :backup_files, through: :profiles
+
+  def storage_usage
+    return self.backup_files.sum(:actual_size)
+  end
 end

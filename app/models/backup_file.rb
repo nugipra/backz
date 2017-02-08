@@ -60,6 +60,7 @@ class BackupFile < ApplicationRecord
         backup_file.status = File.exists?(versioned_file_storage_path) ? "modified" : "added"
         FileUtils.cp path, File.dirname(file_storage_path), preserve: true
       end
+      backup_file.actual_size = File.lstat(file_storage_path).size
 
       backup_file.save
     end
