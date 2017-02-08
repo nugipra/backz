@@ -15,6 +15,7 @@ Rails.application.routes.draw do
     member do
       post :run_backup
       get 'browse/:version', to: 'profiles#browse_backup_files', as: :browse_backup_files
+      get 'browse/:version/:status', to: 'profiles#browse_backup_files_by_status'
     end
   end
 

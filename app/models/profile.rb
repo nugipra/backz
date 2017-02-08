@@ -25,4 +25,9 @@ class Profile < ApplicationRecord
     return self.backup_files.where(status: status, version: version).count
   end
 
+  def backup_completion_time(version)
+    last_file = self.backup_files.where(version: version).last
+    return last_file.try(:created_at)
+  end
+
 end

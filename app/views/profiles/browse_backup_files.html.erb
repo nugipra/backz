@@ -10,11 +10,20 @@
 
   <p>
     Backup version : <%= params[:version] %> 
-    (completed on <%= @current_backup_version.backup_time.in_time_zone("Jakarta").strftime("%b %d, %Y %H:%M:%S %Z") %>)
+    (completed on <%= @backup_completion_time.in_time_zone("Jakarta").strftime("%b %d, %Y %H:%M:%S %Z") %>)
   </p>
   <p>
-    <%= pluralize @total_added_files, "file" %> added. 
-    <%= pluralize @total_modified_files, "file" %> modified.
+    <% unless @total_added_files.zero? %>
+      <%= link_to(pluralize(@total_added_files, 'file') + " added", "/profiles/#{@profile.id}/browse/#{params[:version]}/added") %>
+    <% else %>
+      No file added
+    <% end %>
+|
+    <% unless @total_modified_files.zero? %>
+      <%= link_to(pluralize(@total_modified_files, 'file') + " modified", "/profiles/#{@profile.id}/browse/#{params[:version]}/modified") %>
+    <% else %>
+      No file modified
+    <% end %>
   </p>
 </div>
 
@@ -56,8 +65,8 @@
           <% end %>
         </td>
         <td><%= number_to_human_size(backup_file.size) unless backup_file.is_directory? %></td>
-        <td><%= Etc.getpwuid(backup_file.uid).try(:name) %></td>
-        <td><%= Etc.getgrgid(backup_file.gid).try(:name) %></td>
+        <td><%= backup_file.owner_name %></td>
+        <td><%= backup_file.group_name %></td>
         <td><%= backup_file.access_number %></td>
         <td>
           <% unless backup_file.is_directory? %>

@@ -5,4 +5,5 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :trackable, :validatable
 
   has_many :profiles, dependent: :destroy
+  has_many :backup_files, through: :profiles
 end

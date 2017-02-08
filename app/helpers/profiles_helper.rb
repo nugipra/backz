@@ -26,4 +26,14 @@ module ProfilesHelper
 
     return html.html_safe
   end
+
+  def backup_files_by_status_breadcrumb
+    html = "<ol class='breadcrumb'>"
+    html << content_tag(:li, link_to("Profiles", profiles_path))
+    html << content_tag(:li, link_to(@profile.name,"/profiles/#{@profile.id}/browse/#{params[:version]}"))
+    html << content_tag(:li, "#{params[:status].titleize} backup files", class: "active")
+    html << "</ol>"
+
+    return html.html_safe
+  end
 end

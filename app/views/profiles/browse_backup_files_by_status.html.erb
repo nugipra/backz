@@ -1,0 +1,50 @@
+<p id="notice"><%= notice %></p>
+
+<div class="page-header">
+  <h1>
+    Browse <%= params[:status] %> backup files <br/>
+    <small>
+      Profile : <%= @profile.name %> 
+    </small>
+  </h1>
+
+  <p>
+    Backup version : <%= params[:version] %> 
+    (completed on <%= @backup_completion_time.in_time_zone("Jakarta").strftime("%b %d, %Y %H:%M:%S %Z") %>)
+  </p>
+</div>
+
+<%= backup_files_by_status_breadcrumb %>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th class="col-sm-5">Filename</th>
+      <th class="col-sm-1">Size</th>
+      <th class="col-sm-1">Owner</th>
+      <th class="col-sm-1">Group</th>
+      <th class="col-sm-1">Permission</th>
+      <th class="col-sm-2"></th>
+  </thead>
+
+  <tbody class="table-striped">
+    <% @backup_files.each do |backup_file| %>
+      <tr>
+        <td>
+          <span>
+            <%= link_to backup_file.relative_path, "/profiles/#{backup_file.profile_id}/browse/#{params[:version]}?file_id=#{backup_file.id}" %>
+          </span>
+        </td>
+        <td><%= number_to_human_size(backup_file.size) unless backup_file.is_directory? %></td>
+        <td><%= backup_file.owner_name %></td>
+        <td><%= backup_file.group_name %></td>
+        <td><%= backup_file.access_number %></td>
+        <td>
+          <% unless backup_file.is_directory? %>
+            <%= link_to "Revision history", revision_history_path(backup_file) %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

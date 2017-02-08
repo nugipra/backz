@@ -114,4 +114,12 @@ class BackupFile < ApplicationRecord
   def image?
     return !(self.description_of_the_contents =~ /^image\//).nil?
   end
+
+  def owner_name
+    return Etc.getpwuid(self.uid).try(:name)
+  end
+
+  def group_name
+    return Etc.getgrgid(self.gid).try(:name)
+  end
 end

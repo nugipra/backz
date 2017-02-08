@@ -162,7 +162,7 @@ RSpec.describe ProfilesController, type: :controller do
       @file3 = FactoryGirl.create(:backup_file, profile: @profile, folder: @folder1)
       @folder2 = FactoryGirl.create(:backup_folder, profile: @profile, folder: @folder1)
 
-      # there is 1 files on @folder2
+      # there is 1 file on @folder2
       @file4 = FactoryGirl.create(:backup_file, profile: @profile, folder: @folder2)
     end
 
@@ -188,6 +188,60 @@ RSpec.describe ProfilesController, type: :controller do
       get :browse_backup_files, params: {id: @profile.to_param, version: 1, file_id: @file2.id}
       expect(assigns(:backup_file)).to eq(@file2)
       allow(controller).to receive(:render)
+    end
+  end
+
+  describe "GET #browse_backup_files_by_status" do
+    clear_backup_files
+
+    before(:each) do
+      @profile = FactoryGirl.create(:profile, user: @user)
+
+      # VERSION 1
+      @file1 = FactoryGirl.create(:backup_file, profile: @profile, version: 1, status: "added")
+      @folder1 = FactoryGirl.create(:backup_folder, profile: @profile, version: 1)
+
+      # there are 2 files and 1 folder on @folder1
+      @file2 = FactoryGirl.create(:backup_file, profile: @profile, folder: @folder1, version: 1, status: "added")
+      @file3 = FactoryGirl.create(:backup_file, profile: @profile, folder: @folder1, version: 1, status: "added")
+      @folder2 = FactoryGirl.create(:backup_folder, profile: @profile, folder: @folder1, version: 1)
+      # there is 1 file on @folder2
+      @file4 = FactoryGirl.create(:backup_file, profile: @profile, folder: @folder2, version: 1, status: "added")
+
+      # VERSION 2
+      @file5 = FactoryGirl.create(:backup_file, profile: @profile, version: 2, status: "not changed")
+      @folder3 = FactoryGirl.create(:backup_folder, profile: @profile, version: 2)
+
+      # there are 2 files and 1 folder on @folder3
+      @file6 = FactoryGirl.create(:backup_file, profile: @profile, folder: @folder3, version: 2, status: "modified")
+      @file7 = FactoryGirl.create(:backup_file, profile: @profile, folder: @folder3, version: 2, status: "not changed")
+      @folder4 = FactoryGirl.create(:backup_folder, profile: @profile, folder: @folder5, version: 2)
+      # there is 2 files on @folder4
+      @file8 = FactoryGirl.create(:backup_file, profile: @profile, folder: @folder4, version: 2, status: "modified")
+      @file9 = FactoryGirl.create(:backup_file, profile: @profile, folder: @folder4, version: 2, status: "added")
+    end
+
+    it "browses added backup files" do
+      get :browse_backup_files_by_status, params: {id: @profile.to_param, version: 1, status: "added"}
+      expect(assigns(:backup_files).size).to eq(4)
+      expect(assigns(:backup_files)).to include(@file1)
+      expect(assigns(:backup_files)).to include(@file2)
+      expect(assigns(:backup_files)).to include(@file3)
+      expect(assigns(:backup_files)).to include(@file4)
+
+      get :browse_backup_files_by_status, params: {id: @profile.to_param, version: 2, status: "added"}
+      expect(assigns(:backup_files).size).to eq(1)
+      expect(assigns(:backup_files)).to include(@file9)
+    end
+
+    it "browses modified backup files" do
+      get :browse_backup_files_by_status, params: {id: @profile.to_param, version: 1, status: "modified"}
+      expect(assigns(:backup_files).size).to eq(0)
+
+      get :browse_backup_files_by_status, params: {id: @profile.to_param, version: 2, status: "modified"}
+      expect(assigns(:backup_files).size).to eq(2)
+      expect(assigns(:backup_files)).to include(@file6)
+      expect(assigns(:backup_files)).to include(@file8)
     end
   end
 

@@ -1,7 +1,7 @@
 class ProfilesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_profile, only: [
-    :show, :edit, :update, :destroy, :run_backup, :browse_backup_files
+    :show, :edit, :update, :destroy, :run_backup, :browse_backup_files, :browse_backup_files_by_status
   ]
 
   # GET /profiles
@@ -72,18 +72,24 @@ class ProfilesController < ApplicationController
 
   def browse_backup_files
     if params[:file_id].present?
+      @disposition = params[:disposition] || "attachment"
       @backup_file = @profile.backup_files.find(params[:file_id])
-      send_file @backup_file.storage_path, disposition: params[:disposition]
+      send_file @backup_file.storage_path, disposition: @disposition
       return
     end
 
     @parent = @profile.backup_files.find(params[:parent_id]) if params[:parent_id].present?
     @backup_files = @profile.backup_files.where(version: params[:version], parent_id: @parent.try(:id)).order("is_directory desc, filename")
     @backup_version = @profile.backup_files.select("version, max(created_at) as backup_time").group("version").order("version desc")
-    @current_backup_version = @backup_version.detect{|b| b.version == params[:version].to_i}
 
+    @backup_completion_time = @profile.backup_completion_time(params[:version])
     @total_added_files = @profile.count_files_by_status_and_version("added", params[:version])
     @total_modified_files = @profile.count_files_by_status_and_version("modified", params[:version])
+  end
+
+  def browse_backup_files_by_status
+    @backup_files = @profile.backup_files.where(version: params[:version], status: params[:status])
+    @backup_completion_time = @profile.backup_completion_time(params[:version])
   end
 
   private
