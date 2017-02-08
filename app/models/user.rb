@@ -47,7 +47,7 @@ class User < ApplicationRecord
         " < 1MB",
         " 1 MB - 10 MB",
         " 10 MB - 100 MB",
-        " < 1 GB"
+        " > 100 MB"
       ],
       datasets: [
         {
@@ -55,7 +55,7 @@ class User < ApplicationRecord
             self.backup_files.where("size < 1000000").where.not(status: "not changed").count,
             self.backup_files.where("size >= 1000000 AND size <= 10000000").where.not(status: "not changed").count,
             self.backup_files.where("size >= 10000000 AND size <= 100000000").where.not(status: "not changed").count,
-            self.backup_files.where("size >= 100000000 AND size <= 1000000000").where.not(status: "not changed").count
+            self.backup_files.where("size >= 100000000").where.not(status: "not changed").count
           ],
           backgroundColor: ["red", "green", "blue", "magenta"]
         }
