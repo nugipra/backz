@@ -14,7 +14,11 @@
       </pre>
     <% elsif @backup_file.image? %>
       <div class="well">
-        <%= image_tag "/profiles/#{@backup_file.profile_id}/browse/#{@backup_file.version}?file_id=#{@backup_file.id}&disposition=inline" %>
+        <%= image_tag "/profiles/#{@backup_file.profile_id}/browse/#{@backup_file.version}?file_id=#{@backup_file.id}" %>
+      </div>
+    <% elsif @backup_file.video? %>
+      <div class="well">
+        <%= video_tag "/profiles/#{@backup_file.profile_id}/browse/#{@backup_file.version}?file_id=#{@backup_file.id}", width: 800  %>
       </div>
     <% else %>
       <div class="well">

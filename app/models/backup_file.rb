@@ -115,6 +115,10 @@ class BackupFile < ApplicationRecord
     return !(self.description_of_the_contents =~ /^image\//).nil?
   end
 
+  def video?
+    return !(self.description_of_the_contents =~ /^video\//).nil?
+  end
+
   def owner_name
     return Etc.getpwuid(self.uid).try(:name)
   end
