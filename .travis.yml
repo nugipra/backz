@@ -6,6 +6,9 @@ before_script:
   - cp config/database.yml.travis config/database.yml
 script:
   - bundle exec rspec spec
+addons:
+  apt_packages:
+    libmagic-dev
 services:
   - postgresql
 
